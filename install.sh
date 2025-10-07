@@ -10,7 +10,7 @@ else
     exit 1
 fi
 
-githubRepo="https://github.com/ellermister/docker-static-install/raw/refs/heads/master"
+githubRepo="https://github.com/ellermister/docker-static-install/raw/refs/heads/main"
 daemonFile="${githubRepo}/daemon.json"
 dockerServiceFile="${githubRepo}/docker.service.conf"
 mirror="https://download.docker.com/linux/static/stable/$cpuFamily/"
