@@ -1,5 +1,82 @@
 #!/bin/bash
 
+# 检查是否为root用户
+if [ "$EUID" -ne 0 ]; then
+    echo "错误: 请使用root权限运行此脚本"
+    echo "使用方法: sudo $0"
+    exit 1
+fi
+
+# 检查是否为apt系统
+check_apt_system() {
+    if ! command -v apt >/dev/null 2>&1 && ! command -v apt-get >/dev/null 2>&1; then
+        echo "错误: 此脚本仅支持基于APT的系统 (Ubuntu/Debian)"
+        echo "当前系统不支持apt包管理器"
+        exit 1
+    fi
+    echo "✓ 检测到APT包管理系统"
+}
+
+# 检查并安装必需的依赖
+install_dependencies() {
+    echo "检查系统依赖..."
+    
+    # 需要检查的命令列表
+    local commands=("wget" "curl" "tar" "systemctl" "iptables")
+    local packages_to_install=()
+    
+    # 检查每个命令是否存在
+    for cmd in "${commands[@]}"; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            case "$cmd" in
+                "wget")
+                    packages_to_install+=("wget")
+                    ;;
+                "curl")
+                    packages_to_install+=("curl")
+                    ;;
+                "tar")
+                    packages_to_install+=("tar")
+                    ;;
+                "systemctl")
+                    packages_to_install+=("systemd")
+                    ;;
+                "iptables")
+                    packages_to_install+=("iptables")
+                    ;;
+            esac
+            echo "⚠ 缺少命令: $cmd"
+        else
+            echo "✓ $cmd 已安装"
+        fi
+    done
+    
+    # 如果有需要安装的包，则进行安装
+    if [ ${#packages_to_install[@]} -gt 0 ]; then
+        echo "正在安装缺少的依赖: ${packages_to_install[*]}"
+        apt update -qq
+        apt install -y "${packages_to_install[@]}"
+        
+        # 再次检查安装是否成功
+        for cmd in "${commands[@]}"; do
+            if ! command -v "$cmd" >/dev/null 2>&1; then
+                echo "错误: $cmd 安装失败"
+                exit 1
+            fi
+        done
+        echo "✓ 所有依赖安装完成"
+    else
+        echo "✓ 所有依赖已满足"
+    fi
+}
+
+# 执行系统检查
+echo "Docker静态安装脚本 - 系统检查"
+echo "================================"
+check_apt_system
+install_dependencies
+echo "================================"
+
 cpuFamily=$(uname -m)
 if [ $cpuFamily == "x86_64" ]; then
     cpuFamily="x86_64"
@@ -10,14 +87,10 @@ else
     exit 1
 fi
 
-githubRepo="https://raw.githubusercontent.com/ellermister/docker-static-install/raw/refs/heads/main"
+githubRepo="https://raw.githubusercontent.com/ellermister/docker-static-install/refs/heads/main"
 daemonFile="${githubRepo}/daemon.json"
 dockerServiceFile="${githubRepo}/docker.service.conf"
 mirror="https://download.docker.com/linux/static/stable/$cpuFamily/"
-
-echo $daemonFile
-echo $dockerServiceFile
-echo "Docker镜像地址: $mirror"
 
 # 获取版本列表函数
 get_docker_versions() {
@@ -160,6 +233,7 @@ install_docker() {
     if systemctl enable docker.service; then
         echo "✓ Docker开机自启设置完成"
     else
+        echo $?
         echo "警告: Docker开机自启设置失败"
     fi
     
