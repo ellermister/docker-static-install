@@ -13,30 +13,24 @@
 
 ## 🚀 快速开始
 
-### 方法一：一键安装 (推荐)
-```bash
-curl -sL https://raw.githubusercontent.com/ellermister/docker-static-install/main/docker | bash
-```
 
-### 方法二：下载脚本安装
 ```bash
 wget -O install.sh https://github.com/ellermister/docker-static-install/raw/main/install.sh
 chmod +x install.sh
-./install.sh
+sudo ./install.sh
 ```
 
-### 方法三：克隆仓库
-```bash
-git clone https://github.com/ellermister/docker-static-install.git
-cd docker-static-install
-./install.sh
-```
 
 ## 📖 使用说明
 
 运行脚本后，会出现交互式菜单：
 
 ```
+Docker静态安装脚本 - 系统检查
+================================
+✓ 检测到APT包管理系统
+✓ 所有依赖已满足
+================================
 Docker静态安装脚本
 ==================
 1. 查看可用版本
