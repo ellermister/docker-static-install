@@ -17,7 +17,7 @@
 ```bash
 wget -O install.sh https://github.com/ellermister/docker-static-install/raw/main/install.sh
 chmod +x install.sh
-sudo ./install.sh
+./install.sh
 ```
 
 
